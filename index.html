@@ -121,6 +121,13 @@
             border-bottom: 3px solid #a7a9a5;
         }
 
+        /* On-screen controls for mobile */
+        #mobile-controls {
+            margin-top: 20px;
+            display: none; /* Hidden on desktop */
+            gap: 10px;
+        }
+
         /* Modal Styles */
         #messageOverlay {
             position: absolute;
@@ -150,6 +157,15 @@
             margin-bottom: 20px;
         }
         
+        /* Media query to show mobile controls and hide desktop ones on touch devices */
+        @media (hover: none) and (pointer: coarse), (max-width: 800px) {
+            #mobile-controls {
+                display: flex;
+            }
+            #controls-info {
+                display: none;
+            }
+        }
     </style>
 </head>
 <body>
@@ -179,6 +195,12 @@
         </div>
     </div>
     
+    <div id="mobile-controls">
+        <button class="btn" id="leftBtn">Left</button>
+        <button class="btn" id="shootBtn">Shoot</button>
+        <button class="btn" id="rightBtn">Right</button>
+    </div>
+
     <div id="endGameButtons">
         <button id="restartButton" class="btn">Restart</button>
     </div>
@@ -193,6 +215,9 @@
         // Buttons
         const restartButton = document.getElementById('restartButton');
         const endGameButtons = document.getElementById('endGameButtons');
+        const leftBtn = document.getElementById('leftBtn');
+        const rightBtn = document.getElementById('rightBtn');
+        const shootBtn = document.getElementById('shootBtn');
         
         // Message Elements
         const messageOverlay = document.getElementById('messageOverlay');
@@ -235,46 +260,30 @@
         function drawPlayer() {
             const p = player; // shorthand
             const pixel = 4; // Each "pixel" is 4x4 canvas pixels, fitting our 40x40 player box
-
-            // Body & Tail (Main Green)
-            ctx.fillStyle = '#4CAF50'; // Main green
-            ctx.fillRect(p.x + pixel * 2, p.y + pixel * 4, pixel * 6, pixel * 5); // Main body
-            ctx.fillRect(p.x + pixel * 1, p.y + pixel * 5, pixel * 1, pixel * 3); // Left side bump
-            ctx.fillRect(p.x + pixel * 8, p.y + pixel * 5, pixel * 1, pixel * 3); // Right side bump
-            ctx.fillRect(p.x + pixel * 0, p.y + pixel * 6, pixel * 1, pixel * 2); // Tail base
-
-            // Head (Main Green)
-            ctx.fillRect(p.x + pixel * 2, p.y + pixel * 1, pixel * 6, pixel * 4); // Head block
-
-            // Belly (Lighter Green)
+            ctx.fillStyle = '#4CAF50';
+            ctx.fillRect(p.x + pixel * 2, p.y + pixel * 4, pixel * 6, pixel * 5);
+            ctx.fillRect(p.x + pixel * 1, p.y + pixel * 5, pixel * 1, pixel * 3);
+            ctx.fillRect(p.x + pixel * 8, p.y + pixel * 5, pixel * 1, pixel * 3);
+            ctx.fillRect(p.x + pixel * 0, p.y + pixel * 6, pixel * 1, pixel * 2);
+            ctx.fillRect(p.x + pixel * 2, p.y + pixel * 1, pixel * 6, pixel * 4);
             ctx.fillStyle = '#8BC34A';
-            ctx.fillRect(p.x + pixel * 3, p.y + pixel * 7, pixel * 4, pixel * 2); // Belly
-
-            // Wings (Darker Green)
+            ctx.fillRect(p.x + pixel * 3, p.y + pixel * 7, pixel * 4, pixel * 2);
             ctx.fillStyle = '#388E3C';
-            ctx.fillRect(p.x + pixel * 0, p.y + pixel * 2, pixel * 2, pixel * 3); // Left wing
-            ctx.fillRect(p.x + pixel * 8, p.y + pixel * 2, pixel * 2, pixel * 3); // Right wing
-
-            // Eyes
+            ctx.fillRect(p.x + pixel * 0, p.y + pixel * 2, pixel * 2, pixel * 3);
+            ctx.fillRect(p.x + pixel * 8, p.y + pixel * 2, pixel * 2, pixel * 3);
             ctx.fillStyle = 'white';
-            ctx.fillRect(p.x + pixel * 3, p.y + pixel * 2, pixel * 1, pixel * 2); // Left eye
-            ctx.fillRect(p.x + pixel * 6, p.y + pixel * 2, pixel * 1, pixel * 2); // Right eye
+            ctx.fillRect(p.x + pixel * 3, p.y + pixel * 2, pixel * 1, pixel * 2);
+            ctx.fillRect(p.x + pixel * 6, p.y + pixel * 2, pixel * 1, pixel * 2);
             ctx.fillStyle = 'black';
-            ctx.fillRect(p.x + pixel * 3, p.y + pixel * 3, pixel * 1, pixel * 1); // Left pupil
-            ctx.fillRect(p.x + pixel * 6, p.y + pixel * 3, pixel * 1, pixel * 1); // Right pupil
-
-            // Mouth
-            ctx.fillStyle = '#F44336'; // Red mouth interior
+            ctx.fillRect(p.x + pixel * 3, p.y + pixel * 3, pixel * 1, pixel * 1);
+            ctx.fillRect(p.x + pixel * 6, p.y + pixel * 3, pixel * 1, pixel * 1);
+            ctx.fillStyle = '#F44336';
             ctx.fillRect(p.x + pixel * 4, p.y + pixel * 4, pixel * 2, pixel * 1);
-
-            // Tongue
-            ctx.fillStyle = '#7C4DFF'; // Blue/Purple tongue
+            ctx.fillStyle = '#7C4DFF';
             ctx.fillRect(p.x + pixel * 4, p.y + pixel * 5, pixel * 2, pixel * 2);
-
-            // Horns (Lighter green)
-            ctx.fillStyle = '#AED581'; // Lighter green for horns
-            ctx.fillRect(p.x + pixel * 2, p.y + pixel * 0, pixel * 1, pixel * 1); // Left horn
-            ctx.fillRect(p.x + pixel * 7, p.y + pixel * 0, pixel * 1, pixel * 1); // Right horn
+            ctx.fillStyle = '#AED581';
+            ctx.fillRect(p.x + pixel * 2, p.y + pixel * 0, pixel * 1, pixel * 1);
+            ctx.fillRect(p.x + pixel * 7, p.y + pixel * 0, pixel * 1, pixel * 1);
         }
 
         function drawProjectiles() {
@@ -287,36 +296,25 @@
 
         function drawEnemies() {
             for (const e of enemies) {
-                const pixel = 3; // Each "pixel" is 3x3, fitting the 30x30 enemy box
-                const x = e.x;
-                const y = e.y;
-
-                // Body (White)
+                const pixel = 3;
+                const x = e.x; const y = e.y;
                 ctx.fillStyle = '#FFFFFF';
                 ctx.fillRect(x + pixel * 1, y + pixel * 2, pixel * 8, pixel * 6);
-
-                // Feet (Yellow)
                 ctx.fillStyle = '#FFC107';
                 ctx.fillRect(x + pixel * 2, y + pixel * 8, pixel * 2, pixel * 2);
                 ctx.fillRect(x + pixel * 6, y + pixel * 8, pixel * 2, pixel * 2);
-
-                // Eyes (Goofy and big)
                 ctx.fillStyle = '#FFFFFF';
-                ctx.fillRect(x + pixel * 2, y + pixel * 2, pixel * 2, pixel * 2); // Left white part
-                ctx.fillRect(x + pixel * 6, y + pixel * 2, pixel * 2, pixel * 2); // Right white part
+                ctx.fillRect(x + pixel * 2, y + pixel * 2, pixel * 2, pixel * 2);
+                ctx.fillRect(x + pixel * 6, y + pixel * 2, pixel * 2, pixel * 2);
                 ctx.fillStyle = '#000000';
-                ctx.fillRect(x + pixel * 3, y + pixel * 3, pixel * 1, pixel * 1); // Left pupil
-                ctx.fillRect(x + pixel * 7, y + pixel * 3, pixel * 1, pixel * 1); // Right pupil
-
-                // Comb (Red)
+                ctx.fillRect(x + pixel * 3, y + pixel * 3, pixel * 1, pixel * 1);
+                ctx.fillRect(x + pixel * 7, y + pixel * 3, pixel * 1, pixel * 1);
                 ctx.fillStyle = '#F44336';
                 ctx.fillRect(x + pixel * 3, y + pixel * 0, pixel * 4, pixel * 1);
                 ctx.fillRect(x + pixel * 4, y - pixel, pixel * 2, pixel * 1);
-
-                // Beak and Wattle
-                ctx.fillStyle = '#FFEB3B'; // Yellow Beak
+                ctx.fillStyle = '#FFEB3B';
                 ctx.fillRect(x + pixel * 4, y + pixel * 4, pixel * 2, pixel * 2);
-                ctx.fillStyle = '#F44336'; // Red Wattle
+                ctx.fillStyle = '#F44336';
                 ctx.fillRect(x + pixel * 4, y + pixel * 6, pixel * 2, pixel * 1);
             }
         }
@@ -371,24 +369,14 @@
         // --- GAME LOOP ---
         function update() {
             if (!gameStarted) return;
+            if (gameOver) { endGame(false); return; }
+            if (enemies.length === 0) { endGame(true); return; }
             
-            if (gameOver) {
-                endGame(false); // Player lost
-                return;
-            }
-            if (enemies.length === 0) {
-                endGame(true); // Player won
-                return;
-            }
-            
-            // Player movement
             if (keys.right && player.x < canvas.width - player.width) player.x += player.speed;
             if (keys.left && player.x > 0) player.x -= player.speed;
             
-            // Update projectiles
             projectiles.forEach((p, i) => { p.y -= 7; if (p.y < 0) projectiles.splice(i, 1); });
             
-            // Update enemies
             let hitEdge = false;
             for (const enemy of enemies) {
                 enemy.x += enemySpeed * enemyDirection;
@@ -422,12 +410,10 @@
         }
         
         // --- GAME STATE & MESSAGING ---
-        
         function endGame(isWin) {
             gameStarted = false;
             messageOverlay.style.display = 'flex';
             endGameButtons.style.display = 'flex';
-            
             if (isWin) {
                 mainMessageEl.innerText = "YOU WIN!";
                 subMessageEl.innerText = "The chickens have been roasted!";
@@ -444,7 +430,6 @@
             player.x = canvas.width / 2 - player.width / 2;
             createEnemies();
             enemyDirection = 1;
-            
             messageOverlay.style.display = 'none';
             endGameButtons.style.display = 'none';
             gameStarted = true;
@@ -452,25 +437,37 @@
 
         function showStartMessage() {
             mainMessageEl.innerText = "Dragon vs Chickens";
-            subMessageEl.innerText = "Press SPACE to Start";
+            subMessageEl.innerText = "Press Space or Shoot to Start";
             messageOverlay.style.display = 'flex';
         }
 
         // --- EVENT LISTENERS ---
+        function handleShoot() {
+            if (!gameStarted && !gameOver) {
+                resetGame();
+            } else if (gameStarted) {
+                shoot();
+            }
+        }
+        
+        // Keyboard controls
         function keyDown(e) {
             if (e.key === 'ArrowRight' || e.key === 'd') keys.right = true;
             if (e.key === 'ArrowLeft' || e.key === 'a') keys.left = true;
-            if (e.key === ' ') {
-                e.preventDefault();
-                if (!gameStarted && !gameOver) resetGame();
-                else if (gameStarted) shoot();
-            }
+            if (e.key === ' ') { e.preventDefault(); handleShoot(); }
         }
         function keyUp(e) {
             if (e.key === 'ArrowRight' || e.key === 'd') keys.right = false;
             if (e.key === 'ArrowLeft' || e.key === 'a') keys.left = false;
         }
         
+        // Touch controls
+        leftBtn.addEventListener('touchstart', (e) => { e.preventDefault(); keys.left = true; });
+        leftBtn.addEventListener('touchend', (e) => { e.preventDefault(); keys.left = false; });
+        rightBtn.addEventListener('touchstart', (e) => { e.preventDefault(); keys.right = true; });
+        rightBtn.addEventListener('touchend', (e) => { e.preventDefault(); keys.right = false; });
+        shootBtn.addEventListener('touchstart', (e) => { e.preventDefault(); handleShoot(); });
+
         restartButton.addEventListener('click', resetGame);
 
         window.addEventListener('keydown', keyDown);
