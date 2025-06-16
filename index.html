@@ -259,21 +259,48 @@
 
         // --- DRAWING FUNCTIONS ---
         function drawPlayer() {
-            ctx.fillStyle = '#2ecc71';
-            ctx.fillRect(player.x + 5, player.y + 10, player.width - 10, player.height - 10);
-            ctx.fillStyle = '#27ae60';
-            ctx.fillRect(player.x + 10, player.y, player.width - 20, player.height - 20);
+            const p = player; // shorthand
+            const pixel = 4; // Each "pixel" is 4x4 canvas pixels, fitting our 40x40 player box
+
+            // Body & Tail (Main Green)
+            ctx.fillStyle = '#4CAF50'; // Main green
+            ctx.fillRect(p.x + pixel * 2, p.y + pixel * 4, pixel * 6, pixel * 5); // Main body
+            ctx.fillRect(p.x + pixel * 1, p.y + pixel * 5, pixel * 1, pixel * 3); // Left side bump
+            ctx.fillRect(p.x + pixel * 8, p.y + pixel * 5, pixel * 1, pixel * 3); // Right side bump
+            ctx.fillRect(p.x + pixel * 0, p.y + pixel * 6, pixel * 1, pixel * 2); // Tail base
+
+            // Head (Main Green)
+            ctx.fillRect(p.x + pixel * 2, p.y + pixel * 1, pixel * 6, pixel * 4); // Head block
+
+            // Belly (Lighter Green)
+            ctx.fillStyle = '#8BC34A';
+            ctx.fillRect(p.x + pixel * 3, p.y + pixel * 7, pixel * 4, pixel * 2); // Belly
+
+            // Wings (Darker Green)
+            ctx.fillStyle = '#388E3C';
+            ctx.fillRect(p.x + pixel * 0, p.y + pixel * 2, pixel * 2, pixel * 3); // Left wing
+            ctx.fillRect(p.x + pixel * 8, p.y + pixel * 2, pixel * 2, pixel * 3); // Right wing
+
+            // Eyes
             ctx.fillStyle = 'white';
-            ctx.fillRect(player.x + 15, player.y + 5, 4, 4);
-            ctx.fillRect(player.x + 21, player.y + 5, 4, 4);
+            ctx.fillRect(p.x + pixel * 3, p.y + pixel * 2, pixel * 1, pixel * 2); // Left eye
+            ctx.fillRect(p.x + pixel * 6, p.y + pixel * 2, pixel * 1, pixel * 2); // Right eye
             ctx.fillStyle = 'black';
-            ctx.fillRect(player.x + 16, player.y + 6, 2, 2);
-            ctx.fillRect(player.x + 22, player.y + 6, 2, 2);
-            ctx.fillStyle = '#27ae60';
-            ctx.beginPath();
-            ctx.moveTo(player.x + 5, player.y + 15); ctx.lineTo(player.x - 5, player.y + 5); ctx.lineTo(player.x + 5, player.y + 25); ctx.fill();
-            ctx.beginPath();
-            ctx.moveTo(player.x + player.width - 5, player.y + 15); ctx.lineTo(player.x + player.width + 5, player.y + 5); ctx.lineTo(player.x + player.width - 5, player.y + 25); ctx.fill();
+            ctx.fillRect(p.x + pixel * 3, p.y + pixel * 3, pixel * 1, pixel * 1); // Left pupil
+            ctx.fillRect(p.x + pixel * 6, p.y + pixel * 3, pixel * 1, pixel * 1); // Right pupil
+
+            // Mouth
+            ctx.fillStyle = '#F44336'; // Red mouth interior
+            ctx.fillRect(p.x + pixel * 4, p.y + pixel * 4, pixel * 2, pixel * 1);
+
+            // Tongue
+            ctx.fillStyle = '#7C4DFF'; // Blue/Purple tongue
+            ctx.fillRect(p.x + pixel * 4, p.y + pixel * 5, pixel * 2, pixel * 2);
+
+            // Horns (Lighter green)
+            ctx.fillStyle = '#AED581'; // Lighter green for horns
+            ctx.fillRect(p.x + pixel * 2, p.y + pixel * 0, pixel * 1, pixel * 1); // Left horn
+            ctx.fillRect(p.x + pixel * 7, p.y + pixel * 0, pixel * 1, pixel * 1); // Right horn
         }
 
         function drawProjectiles() {
@@ -286,9 +313,37 @@
 
         function drawEnemies() {
             for (const e of enemies) {
-                ctx.fillStyle = '#ecf0f1'; ctx.fillRect(e.x, e.y, e.width, e.height);
-                ctx.fillStyle = '#f1c40f'; ctx.fillRect(e.x + e.width / 2 - 2, e.y + e.height / 2, 4, 4);
-                ctx.fillStyle = '#e74c3c'; ctx.fillRect(e.x + e.width / 2 - 5, e.y - 3, 10, 5);
+                const pixel = 3; // Each "pixel" is 3x3, fitting the 30x30 enemy box
+                const x = e.x;
+                const y = e.y;
+
+                // Body (White)
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(x + pixel * 1, y + pixel * 2, pixel * 8, pixel * 6);
+
+                // Feet (Yellow)
+                ctx.fillStyle = '#FFC107';
+                ctx.fillRect(x + pixel * 2, y + pixel * 8, pixel * 2, pixel * 2);
+                ctx.fillRect(x + pixel * 6, y + pixel * 8, pixel * 2, pixel * 2);
+
+                // Eyes (Goofy and big)
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(x + pixel * 2, y + pixel * 2, pixel * 2, pixel * 2); // Left white part
+                ctx.fillRect(x + pixel * 6, y + pixel * 2, pixel * 2, pixel * 2); // Right white part
+                ctx.fillStyle = '#000000';
+                ctx.fillRect(x + pixel * 3, y + pixel * 3, pixel * 1, pixel * 1); // Left pupil
+                ctx.fillRect(x + pixel * 7, y + pixel * 3, pixel * 1, pixel * 1); // Right pupil
+
+                // Comb (Red)
+                ctx.fillStyle = '#F44336';
+                ctx.fillRect(x + pixel * 3, y + pixel * 0, pixel * 4, pixel * 1);
+                ctx.fillRect(x + pixel * 4, y - pixel, pixel * 2, pixel * 1);
+
+                // Beak and Wattle
+                ctx.fillStyle = '#FFEB3B'; // Yellow Beak
+                ctx.fillRect(x + pixel * 4, y + pixel * 4, pixel * 2, pixel * 2);
+                ctx.fillStyle = '#F44336'; // Red Wattle
+                ctx.fillRect(x + pixel * 4, y + pixel * 6, pixel * 2, pixel * 1);
             }
         }
         
@@ -396,10 +451,15 @@
         
         async function callGemini(prompt) {
           geminiMessageEl.innerHTML = '<div class="spinner"></div>';
-          let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
-          const payload = { contents: chatHistory };
-          const apiKey = ""; // API key is handled by the environment
+
+          // This API call is configured for an environment where the API key is automatically provided.
+          // A 401 Unauthorized error typically means that no valid API key was found in the execution environment.
+          const apiKey = ""; // Left empty as per environment requirements.
           const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+          const payload = { 
+              contents: [{ role: "user", parts: [{ text: prompt }] }] 
+          };
 
           try {
             const response = await fetch(apiUrl, {
@@ -407,15 +467,29 @@
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(payload)
             });
+
+            // This block handles HTTP errors like 401, 403, 500 etc.
+            if (!response.ok) {
+                const errorBody = await response.text();
+                console.error("Gemini API Error:", response.status, errorBody);
+                geminiMessageEl.innerText = `The chickens are silent (API Error ${response.status}).`;
+                return; 
+            }
+
             const result = await response.json();
-            if (result.candidates && result.candidates.length > 0 && result.candidates[0].content.parts[0].text) {
-              const text = result.candidates[0].content.parts[0].text;
+
+            // Safely access the response text.
+            const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+            if (text) {
               geminiMessageEl.innerText = `A chicken squawks: "${text}"`;
             } else {
+              console.warn("Gemini API response did not contain expected content.", result);
               geminiMessageEl.innerText = "The chickens are speechless...";
             }
           } catch (error) {
-            console.error("Error calling Gemini API:", error);
+            // This block handles network errors (e.g., DNS, CORS) or other unexpected JS errors.
+            console.error("Error in callGemini function:", error);
             geminiMessageEl.innerText = "The chickens' squawks were lost in the ether...";
           }
         }
