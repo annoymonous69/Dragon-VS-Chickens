@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dragon vs. Chickens</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #1a1a2e;
+            color: #e0e1dd;
+            font-family: 'Press Start 2P', cursive;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+        }
+
+        #main-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        #gameContainer {
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(255, 107, 107, 0.5), inset 0 0 20px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            border: 5px solid #0f3460;
+            background: url('https://www.transparenttextures.com/patterns/stardust.png');
+            background-color: #16213e;
+            position: relative;
+        }
+
+        canvas {
+            display: block;
+            background-color: transparent;
+            max-width: 100%;
+        }
+
+        .btn {
+            background: #e94560;
+            border: none;
+            border-radius: 10px;
+            padding: 15px 25px;
+            color: white;
+            font-family: 'Press Start 2P', cursive;
+            cursor: pointer;
+            box-shadow: 0 5px #c33149;
+            transition: all 0.1s ease-in-out;
+            touch-action: manipulation;
+        }
+
+        .btn:active {
+            transform: translateY(5px);
+            box-shadow: 0 0 #c33149;
+        }
+        
+        #endGameButtons {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        #scoreBoard {
+             margin-bottom: 15px;
+             font-size: 1.2rem;
+             display: flex;
+             justify-content: space-between;
+             width: 90%;
+             max-width: 800px;
+        }
+        
+        h1 {
+            color: #e94560;
+            text-shadow: 3px 3px 0px #0f3460;
+        }
+
+        /* Controls Instructions Panel */
+        #controls-info {
+            background-color: #0f3460;
+            border: 3px solid #e94560;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: left;
+            width: 200px;
+            margin-top: 20px;
+        }
+
+        #controls-info h3 {
+            margin-top: 0;
+            text-align: center;
+            color: #e94560;
+        }
+        
+        #controls-info p {
+            margin: 10px 0;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .key {
+            background: #e0e1dd;
+            color: #1a1a2e;
+            border-radius: 5px;
+            padding: 5px 10px;
+            margin-right: 10px;
+            font-size: 1rem;
+            min-width: 20px;
+            text-align: center;
+            display: inline-block;
+            border-bottom: 3px solid #a7a9a5;
+        }
+
+        /* Modal Styles */
+        #messageOverlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none; /* Initially hidden */
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        #messageBox {
+            text-align: center;
+        }
+        #mainMessage {
+            color: #e94560;
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        #subMessage {
+            color: white;
+            font-size: 1rem;
+            margin-bottom: 20px;
+        }
+        #geminiMessage {
+            color: #f1c40f;
+            font-size: 0.8rem;
+            min-height: 50px; /* Reserve space */
+            font-style: italic;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid #ffffff;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+    </style>
+</head>
+<body>
+
+    <h1>Dragon vs Chickens</h1>
+    <div id="scoreBoard">
+        <span id="score">Score: 0</span>
+        <span id="lives">Lives: 3</span>
+    </div>
+
+    <div id="main-content">
+        <div id="gameContainer">
+            <canvas id="gameCanvas"></canvas>
+            <div id="messageOverlay">
+                <div id="messageBox">
+                    <div id="mainMessage"></div>
+                    <div id="subMessage"></div>
+                    <div id="geminiMessage">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="controls-info">
+            <h3>Controls</h3>
+            <p><span class="key">←</span> Move Left</p>
+            <p><span class="key">→</span> Move Right</p>
+            <p><span class="key">SPACE</span> Shoot</p>
+        </div>
+    </div>
+    
+    <div id="endGameButtons" style="display: none; margin-top: 20px;">
+        <button id="restartButton" class="btn">Restart</button>
+        <button id="shareButton" class="btn">Share Game</button>
+    </div>
+
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreEl = document.getElementById('score');
+        const livesEl = document.getElementById('lives');
+        
+        // Buttons
+        const restartButton = document.getElementById('restartButton');
+        const shareButton = document.getElementById('shareButton');
+        const endGameButtons = document.getElementById('endGameButtons');
+        
+        // Message Elements
+        const messageOverlay = document.getElementById('messageOverlay');
+        const mainMessageEl = document.getElementById('mainMessage');
+        const subMessageEl = document.getElementById('subMessage');
+        const geminiMessageEl = document.getElementById('geminiMessage');
+
+        // Game dimensions
+        let canvasWidth = Math.min(window.innerWidth * 0.9, 600);
+        let canvasHeight = Math.min(window.innerHeight * 0.6, 400);
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+
+        // Game state
+        let score = 0;
+        let lives = 3;
+        let gameOver = false;
+        let gameStarted = false;
+
+        // Player (Dragon)
+        const player = { x: canvas.width / 2 - 20, y: canvas.height - 50, width: 40, height: 40, speed: 5 };
+        const projectiles = [];
+        let canShoot = true;
+
+        // Enemies (Chickens)
+        const enemies = [];
+        const enemyProjectiles = [];
+        const enemyRows = 4;
+        const enemyCols = 8;
+        const enemyWidth = 30;
+        const enemyHeight = 30;
+        const enemyPadding = 10;
+        let enemyDirection = 1;
+        let enemySpeed = 0.5;
+        let dropAmount = 20;
+
+        // Controls
+        const keys = { right: false, left: false };
+
+        // --- DRAWING FUNCTIONS ---
+        function drawPlayer() {
+            ctx.fillStyle = '#2ecc71';
+            ctx.fillRect(player.x + 5, player.y + 10, player.width - 10, player.height - 10);
+            ctx.fillStyle = '#27ae60';
+            ctx.fillRect(player.x + 10, player.y, player.width - 20, player.height - 20);
+            ctx.fillStyle = 'white';
+            ctx.fillRect(player.x + 15, player.y + 5, 4, 4);
+            ctx.fillRect(player.x + 21, player.y + 5, 4, 4);
+            ctx.fillStyle = 'black';
+            ctx.fillRect(player.x + 16, player.y + 6, 2, 2);
+            ctx.fillRect(player.x + 22, player.y + 6, 2, 2);
+            ctx.fillStyle = '#27ae60';
+            ctx.beginPath();
+            ctx.moveTo(player.x + 5, player.y + 15); ctx.lineTo(player.x - 5, player.y + 5); ctx.lineTo(player.x + 5, player.y + 25); ctx.fill();
+            ctx.beginPath();
+            ctx.moveTo(player.x + player.width - 5, player.y + 15); ctx.lineTo(player.x + player.width + 5, player.y + 5); ctx.lineTo(player.x + player.width - 5, player.y + 25); ctx.fill();
+        }
+
+        function drawProjectiles() {
+            for (const p of projectiles) {
+                ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); ctx.fillStyle = '#f39c12'; ctx.fill();
+                ctx.shadowBlur = 10; ctx.shadowColor = "#e67e22";
+            }
+            ctx.shadowBlur = 0;
+        }
+
+        function drawEnemies() {
+            for (const e of enemies) {
+                ctx.fillStyle = '#ecf0f1'; ctx.fillRect(e.x, e.y, e.width, e.height);
+                ctx.fillStyle = '#f1c40f'; ctx.fillRect(e.x + e.width / 2 - 2, e.y + e.height / 2, 4, 4);
+                ctx.fillStyle = '#e74c3c'; ctx.fillRect(e.x + e.width / 2 - 5, e.y - 3, 10, 5);
+            }
+        }
+        
+        function drawEnemyProjectiles() {
+            for(const egg of enemyProjectiles) {
+                ctx.beginPath(); ctx.ellipse(egg.x, egg.y, 5, 7, 0, 0, Math.PI * 2); ctx.fillStyle = '#f1f2f6'; ctx.fill();
+            }
+        }
+
+        // --- UPDATE & LOGIC ---
+        function createEnemies() {
+            enemies.length = 0;
+            for (let c = 0; c < enemyCols; c++) {
+                for (let r = 0; r < enemyRows; r++) {
+                    enemies.push({ x: c * (enemyWidth + enemyPadding) + 30, y: r * (enemyHeight + enemyPadding) + 30, width: enemyWidth, height: enemyHeight });
+                }
+            }
+        }
+
+        function shoot() {
+             if (canShoot) {
+                projectiles.push({ x: player.x + player.width / 2, y: player.y, radius: 5 });
+                canShoot = false;
+                setTimeout(() => canShoot = true, 500);
+             }
+        }
+        
+        function handlePlayerHit() {
+            lives--; livesEl.innerText = `Lives: ${lives}`;
+            if (lives <= 0) gameOver = true;
+        }
+
+        function checkCollisions() {
+            for (let i = projectiles.length - 1; i >= 0; i--) {
+                for (let j = enemies.length - 1; j >= 0; j--) {
+                    const p = projectiles[i]; const e = enemies[j];
+                    if (p && e && p.x > e.x && p.x < e.x + e.width && p.y > e.y && p.y < e.y + e.height) {
+                        projectiles.splice(i, 1); enemies.splice(j, 1);
+                        score += 100; scoreEl.innerText = `Score: ${score}`;
+                    }
+                }
+            }
+            for(let i = enemyProjectiles.length - 1; i >= 0; i--) {
+                const egg = enemyProjectiles[i];
+                if (egg.x > player.x && egg.x < player.x + player.width && egg.y > player.y && egg.y < player.y + player.height) {
+                    enemyProjectiles.splice(i, 1); handlePlayerHit();
+                }
+            }
+        }
+
+        // --- GAME LOOP ---
+        function update() {
+            if (!gameStarted) return;
+            
+            if (gameOver) {
+                endGame(false); // Player lost
+                return;
+            }
+            if (enemies.length === 0) {
+                endGame(true); // Player won
+                return;
+            }
+            
+            // Player movement
+            if (keys.right && player.x < canvas.width - player.width) player.x += player.speed;
+            if (keys.left && player.x > 0) player.x -= player.speed;
+            
+            // Update projectiles
+            projectiles.forEach((p, i) => { p.y -= 7; if (p.y < 0) projectiles.splice(i, 1); });
+            
+            // Update enemies
+            let hitEdge = false;
+            for (const enemy of enemies) {
+                enemy.x += enemySpeed * enemyDirection;
+                if (enemy.x + enemy.width > canvas.width || enemy.x < 0) hitEdge = true;
+                if (enemy.y + enemy.height >= player.y) gameOver = true;
+            }
+            if (hitEdge) {
+                enemyDirection *= -1;
+                enemies.forEach(e => e.y += dropAmount);
+            }
+            if(Math.random() < 0.02 && enemies.length > 0) {
+                const re = enemies[Math.floor(Math.random() * enemies.length)];
+                enemyProjectiles.push({ x: re.x + re.width / 2, y: re.y + re.height, speed: 3 });
+            }
+            enemyProjectiles.forEach((egg, i) => { egg.y += egg.speed; if (egg.y > canvas.height) enemyProjectiles.splice(i, 1); });
+            
+            checkCollisions();
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (gameStarted) {
+                drawPlayer(); drawProjectiles(); drawEnemies(); drawEnemyProjectiles();
+            }
+        }
+
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // --- GAME STATE & MESSAGING ---
+        
+        async function callGemini(prompt) {
+          geminiMessageEl.innerHTML = '<div class="spinner"></div>';
+          let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+          const payload = { contents: chatHistory };
+          const apiKey = ""; // API key is handled by the environment
+          const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+          try {
+            const response = await fetch(apiUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+            const result = await response.json();
+            if (result.candidates && result.candidates.length > 0 && result.candidates[0].content.parts[0].text) {
+              const text = result.candidates[0].content.parts[0].text;
+              geminiMessageEl.innerText = `A chicken squawks: "${text}"`;
+            } else {
+              geminiMessageEl.innerText = "The chickens are speechless...";
+            }
+          } catch (error) {
+            console.error("Error calling Gemini API:", error);
+            geminiMessageEl.innerText = "The chickens' squawks were lost in the ether...";
+          }
+        }
+
+        function endGame(isWin) {
+            gameStarted = false;
+            messageOverlay.style.display = 'flex';
+            endGameButtons.style.display = 'flex';
+            
+            let prompt = '';
+            if (isWin) {
+                mainMessageEl.innerText = "YOU WIN!";
+                subMessageEl.innerText = "The chickens have been roasted!";
+                prompt = "Write a short, funny, respectful message of concession from a chicken who was just defeated by a dragon in a video game.";
+            } else {
+                mainMessageEl.innerText = "GAME OVER";
+                subMessageEl.innerText = `Final Score: ${score}`;
+                prompt = "Write a short, funny, taunting message from a chicken who just defeated a dragon in a video game.";
+            }
+            callGemini(prompt);
+        }
+
+        function resetGame() {
+            score = 0; lives = 3; gameOver = false;
+            scoreEl.innerText = 'Score: 0'; livesEl.innerText = 'Lives: 3';
+            projectiles.length = 0; enemyProjectiles.length = 0;
+            player.x = canvas.width / 2 - player.width / 2;
+            createEnemies();
+            enemyDirection = 1;
+            
+            messageOverlay.style.display = 'none';
+            endGameButtons.style.display = 'none';
+            gameStarted = true;
+        }
+
+        function showStartMessage() {
+            mainMessageEl.innerText = "Dragon vs Chickens";
+            subMessageEl.innerText = "Press SPACE to Start";
+            geminiMessageEl.innerHTML = "";
+            messageOverlay.style.display = 'flex';
+        }
+
+        // --- EVENT LISTENERS ---
+        function keyDown(e) {
+            if (e.key === 'ArrowRight' || e.key === 'd') keys.right = true;
+            if (e.key === 'ArrowLeft' || e.key === 'a') keys.left = true;
+            if (e.key === ' ') {
+                e.preventDefault();
+                if (!gameStarted && !gameOver) resetGame();
+                else if (gameStarted) shoot();
+            }
+        }
+        function keyUp(e) {
+            if (e.key === 'ArrowRight' || e.key === 'd') keys.right = false;
+            if (e.key === 'ArrowLeft' || e.key === 'a') keys.left = false;
+        }
+        
+        restartButton.addEventListener('click', resetGame);
+
+        shareButton.addEventListener('click', () => {
+            const codeToCopy = document.documentElement.outerHTML;
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = codeToCopy;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempTextArea);
+            
+            shareButton.innerText = 'Copied!';
+            setTimeout(() => { shareButton.innerText = 'Share Game'; }, 2000);
+        });
+
+        window.addEventListener('keydown', keyDown);
+        window.addEventListener('keyup', keyUp);
+        window.addEventListener('resize', () => {
+            canvasWidth = Math.min(window.innerWidth * 0.9, 600);
+            canvasHeight = Math.min(window.innerHeight * 0.6, 400);
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+            if (!gameStarted) {
+               showStartMessage();
+            }
+        });
+        
+        // --- INITIALIZE ---
+        showStartMessage();
+        gameLoop();
+    </script>
+</body>
+</html>
