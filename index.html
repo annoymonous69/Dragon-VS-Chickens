@@ -65,7 +65,8 @@
         
         #endGameButtons {
             margin-top: 20px;
-            display: flex;
+            display: none; /* Hidden by default */
+            justify-content: center;
             gap: 10px;
         }
 
@@ -148,27 +149,6 @@
             font-size: 1rem;
             margin-bottom: 20px;
         }
-        #geminiMessage {
-            color: #f1c40f;
-            font-size: 0.8rem;
-            min-height: 50px; /* Reserve space */
-            font-style: italic;
-        }
-        
-        .spinner {
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top: 4px solid #ffffff;
-            width: 30px;
-            height: 30px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
         
     </style>
 </head>
@@ -187,9 +167,6 @@
                 <div id="messageBox">
                     <div id="mainMessage"></div>
                     <div id="subMessage"></div>
-                    <div id="geminiMessage">
-                        <div class="spinner"></div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -202,9 +179,8 @@
         </div>
     </div>
     
-    <div id="endGameButtons" style="display: none; margin-top: 20px;">
+    <div id="endGameButtons">
         <button id="restartButton" class="btn">Restart</button>
-        <button id="shareButton" class="btn">Share Game</button>
     </div>
 
 
@@ -216,14 +192,12 @@
         
         // Buttons
         const restartButton = document.getElementById('restartButton');
-        const shareButton = document.getElementById('shareButton');
         const endGameButtons = document.getElementById('endGameButtons');
         
         // Message Elements
         const messageOverlay = document.getElementById('messageOverlay');
         const mainMessageEl = document.getElementById('mainMessage');
         const subMessageEl = document.getElementById('subMessage');
-        const geminiMessageEl = document.getElementById('geminiMessage');
 
         // Game dimensions
         let canvasWidth = Math.min(window.innerWidth * 0.9, 600);
@@ -449,67 +423,18 @@
         
         // --- GAME STATE & MESSAGING ---
         
-        async function callGemini(prompt) {
-          geminiMessageEl.innerHTML = '<div class="spinner"></div>';
-
-          // This API call is configured for an environment where the API key is automatically provided.
-          // A 401 Unauthorized error typically means that no valid API key was found in the execution environment.
-          const apiKey = ""; // Left empty as per environment requirements.
-          const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-
-          const payload = { 
-              contents: [{ role: "user", parts: [{ text: prompt }] }] 
-          };
-
-          try {
-            const response = await fetch(apiUrl, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(payload)
-            });
-
-            // This block handles HTTP errors like 401, 403, 500 etc.
-            if (!response.ok) {
-                const errorBody = await response.text();
-                console.error("Gemini API Error:", response.status, errorBody);
-                geminiMessageEl.innerText = `The chickens are silent (API Error ${response.status}).`;
-                return; 
-            }
-
-            const result = await response.json();
-
-            // Safely access the response text.
-            const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
-
-            if (text) {
-              geminiMessageEl.innerText = `A chicken squawks: "${text}"`;
-            } else {
-              console.warn("Gemini API response did not contain expected content.", result);
-              geminiMessageEl.innerText = "The chickens are speechless...";
-            }
-          } catch (error) {
-            // This block handles network errors (e.g., DNS, CORS) or other unexpected JS errors.
-            console.error("Error in callGemini function:", error);
-            geminiMessageEl.innerText = "The chickens' squawks were lost in the ether...";
-          }
-        }
-
         function endGame(isWin) {
             gameStarted = false;
             messageOverlay.style.display = 'flex';
             endGameButtons.style.display = 'flex';
             
-            let prompt = '';
             if (isWin) {
                 mainMessageEl.innerText = "YOU WIN!";
                 subMessageEl.innerText = "The chickens have been roasted!";
-                prompt = "Write a short, funny, respectful message of concession from a chicken who was just defeated by a dragon in a video game.";
             } else {
                 mainMessageEl.innerText = "GAME OVER";
                 subMessageEl.innerText = `Final Score: ${score}`;
-                prompt = "Write a short, funny, taunting message from a chicken who just defeated a dragon in a video game.";
             }
-            callGemini(prompt);
         }
 
         function resetGame() {
@@ -528,7 +453,6 @@
         function showStartMessage() {
             mainMessageEl.innerText = "Dragon vs Chickens";
             subMessageEl.innerText = "Press SPACE to Start";
-            geminiMessageEl.innerHTML = "";
             messageOverlay.style.display = 'flex';
         }
 
@@ -548,19 +472,6 @@
         }
         
         restartButton.addEventListener('click', resetGame);
-
-        shareButton.addEventListener('click', () => {
-            const codeToCopy = document.documentElement.outerHTML;
-            const tempTextArea = document.createElement('textarea');
-            tempTextArea.value = codeToCopy;
-            document.body.appendChild(tempTextArea);
-            tempTextArea.select();
-            document.execCommand('copy');
-            document.body.removeChild(tempTextArea);
-            
-            shareButton.innerText = 'Copied!';
-            setTimeout(() => { shareButton.innerText = 'Share Game'; }, 2000);
-        });
 
         window.addEventListener('keydown', keyDown);
         window.addEventListener('keyup', keyUp);
